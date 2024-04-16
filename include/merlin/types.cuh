@@ -44,17 +44,24 @@ using byte = uint8_t;
 // Digest.
 using D = byte;
 
-constexpr uint64_t EMPTY_KEY = UINT64_C(0xFFFFFFFFFFFFFFFF);
-constexpr uint64_t RECLAIM_KEY = UINT64_C(0xFFFFFFFFFFFFFFFE);
-constexpr uint64_t VACANT_KEY_MASK = UINT64_C(0xFFFFFFFFFFFFFFFE);
-constexpr uint64_t LOCKED_KEY = UINT64_C(0xFFFFFFFFFFFFFFFD);
-constexpr uint64_t RESERVED_KEY_MASK = UINT64_C(0xFFFFFFFFFFFFFFFC);
+__constant__ uint64_t EMPTY_KEY = UINT64_C(0xFFFFFFFFFFFFFFFF);
+__constant__ uint64_t RECLAIM_KEY = UINT64_C(0xFFFFFFFFFFFFFFFE);
+__constant__ uint64_t LOCKED_KEY = UINT64_C(0xFFFFFFFFFFFFFFFD);
+
 constexpr uint64_t MAX_SCORE = UINT64_C(0xFFFFFFFFFFFFFFFF);
 constexpr uint64_t EMPTY_SCORE = UINT64_C(0);
 constexpr uint64_t IGNORED_GLOBAL_EPOCH = UINT64_C(0xFFFFFFFFFFFFFFFF);
 
-#define IS_RESERVED_KEY(key) ((RESERVED_KEY_MASK & (key)) == RESERVED_KEY_MASK)
-#define IS_VACANT_KEY(key) ((VACANT_KEY_MASK & (key)) == VACANT_KEY_MASK)
+template <class K>
+__forceinline__ __device__ bool IS_RESERVED_KEY(K key) {
+  return key == EMPTY_KEY || key == RECLAIM_KEY || key == LOCKED_KEY;
+}
+
+template <class K>
+__forceinline__ __device__ bool IS_VACANT_KEY(K key) {
+  return key == EMPTY_KEY || key == RECLAIM_KEY;
+}
+
 
 template <class K>
 using AtomicKey = cuda::atomic<K, cuda::thread_scope_device>;
